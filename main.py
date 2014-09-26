@@ -3,22 +3,34 @@ Created 13 August, 2014
 @author : iHub Research
 
 '''
+# load required libraries
 import image_processing
 import numpy as np
+from flask import Flask
 
-# create Directory
-route = image_processing.Route('nhif')
-route.set_dir()
+# create flask web server
+app = Flask(__name__)
 
-# grab Image  
-route.images()
+# capture HTTP endpoint
+@app.route('/ImPro/<road>')
 
-# load images
-x =route.load()
-print len(x)
-print type(x)
+def get_route(road):
+	# create Directory
+	route = image_processing.Route(road)
+	route.set_dir()
 
-# motion detection
-y = route.motion(x['img_a.jpg'],x['img_b.jpg'],x['img_c.jpg'])
-print y
+	# grab Image  
+	route.images()
+
+	# load images
+	x =route.load()
+
+	# motion detection
+	y = route.motion(x['img_a.jpg'],x['img_b.jpg'],x['img_c.jpg'])
+
+	return y
+
+if __name__ == "__main__":
+    app.run(host='192.168.33.71')
+
 
