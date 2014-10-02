@@ -132,7 +132,7 @@ class Route(object):
         for me,it in enumerate(good_points.flat):
             meat.append(me)
             iko.append(it)
-        new_features = zip(itertools.repeat(it),itertools.repeat(me)
+        new_features = zip(itertools.repeat(it),itertools.repeat(me))
 
         diff = np.intersect1d(good_points,p0)
 
