@@ -11,6 +11,7 @@ Created 31, July 2014
 import urllib
 import os
 import time
+import numpy
 import numpy as np
 import cv2
 import links
