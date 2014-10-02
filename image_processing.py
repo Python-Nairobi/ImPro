@@ -11,10 +11,10 @@ Created 31, July 2014
 import urllib
 import os
 import time
+import numpy as np
 import cv2
 import links
 import itertools
-import numpy as np 
 import scipy.spatial.distance as sp 
 from PIL import Image, ImageMath
 from os.path import isfile, join
