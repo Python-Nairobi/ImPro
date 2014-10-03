@@ -52,7 +52,7 @@ def get_route(road):
 	return updates
 
 if __name__ == "__main__":
-    	app.run(host='localhost')
+    	app.run()
 
 
    
