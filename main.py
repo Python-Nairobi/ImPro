@@ -8,32 +8,54 @@ Created 13 August, 2014
 from __future__ import division
 import image_processing
 import numpy as np
+from flask import Flask
+import json
 
 
 # create flask web server 
-#app = Flask(__name__)
+app = Flask(__name__)
 
 # capture HTTP endpoint
-#@app.route('/ImPro/<road>')
+@app.route('/ImPro/<road>')
 
-#def get_route(road):
-# create Directory
-road = 'ojijo'
-route = image_processing.Route(road)
-route.set_dir()
+def get_route(road):
+	# create Directory
+	#road = 'wilson'
 
-# grab Image  
-route.images()
+	route = image_processing.Route(road)
+	route.set_dir()
 
-# load images
-x =route.load()
+	# grab Image  
+	route.images()
 
-# detect motion 
-y = route.motion(x['img_a.jpg'],x['img_b.jpg'],x['img_c.jpg'])
-print y 
+	# load images
+	x =route.load()
 
-#if __name__ == "__main__":
-    #app.run()
+	# get number of different pixels 
+	y = route.diffImg(x['img_a.jpg'],x['img_b.jpg'],x['img_c.jpg'])
+	print y
+
+	# get distance moved by tracked pixles
+	z = route.opticalFlow(x['img_a.jpg'],x['img_b.jpg'],x['img_c.jpg'])
+	print z
+
+	# distance
+	d = route.distance(z[0][0],z[1][0])
+	print d
+
+	if d > 100: 
+		update = "traffic is clear on" + road
+	else: 
+		update = "traffic is standstill on" + road
+
+	updates=json.dumps(update)
+	return updates
+
+if __name__ == "__main__":
+    	app.run(host='localhost')
+
+
+   
 
 
 
