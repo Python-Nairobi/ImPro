@@ -11,11 +11,9 @@ Created 31, July 2014
 import urllib
 import os
 import time
-import numpy
-import numpy as np
 import cv2
 import links
-import itertools
+import numpy as np 
 import scipy.spatial.distance as sp 
 from PIL import Image, ImageMath
 from os.path import isfile, join
@@ -75,8 +73,27 @@ class Route(object):
                 k +=1
         return b
 
-    # motion detection
-    def motion(self,img1,img2,img3):
+    # differential imaging
+    def diffImg(self,img1,img2,img3):
+
+        # calculate absolute difference
+        d1 = cv2.absdiff(img1,img2)
+        d2 = cv2.absdiff(img2,img3)
+        bit = cv2.bitwise_and(d1,d2)
+        ret,thresh = cv2.threshold(bit,35,255,cv2.THRESH_BINARY)
+
+        #get number of different pixels
+        moving = list()
+        for cell in thresh.flat:
+            if cell == 255:
+                move = 'True'
+                moving.append(move)
+            pixie = len(moving)
+
+        return pixie
+ 
+    # calculate optical flow of points on images
+    def opticalFlow(self,img1,img2,img3):
 
         #set variables
         lk_params = dict(winSize = (10,10),
@@ -95,15 +112,21 @@ class Route(object):
         # convert corner points to floating-point
         p0 =np.float32(pt).reshape(-1,1,2)
 
+        # generate index for corner points
         points = list()
         vally = list()
-        for p,val in enumerate(p0.flat):
+        for p,val in enumerate(p0):
             points.append(p)
             vally.append(val)
         features = zip(points,vally)
-          
-        
-        # lucas-kanade optical flow (get next points)
+
+        column = 0
+        column_list = []
+
+        for j in xrange(len(vally)):
+            column_list += [vally[j][column]]
+
+        # get next points using lucas-kanade optical flow 
         p1,st,err =cv2.calcOpticalFlowPyrLK(img1, img2,p0,
                                             None,**lk_params)
       
@@ -115,50 +138,45 @@ class Route(object):
         d = abs(p0-p0r).reshape(-1, 2).max(-1)
         good = d < 1
 
-        # Initialize a list to hold new keypoints
-        new_keypoints = list()
-
         # cycle through all current and new keypoints and only keep
         # those that satisfy the "good" condition above
-        for (x, y), good_flag in zip(p1.reshape(-1, 2), good):
+
+        # Initialize a list to hold new keypoints
+        new_keypoints = list()
+        new_indices = list()
+
+        for (x, y), good_flag,ind in zip(p1.reshape(-1, 2), good,enumerate(good)):
             if not good_flag:
                 continue
             new_keypoints.append((x,y))
+            new_indices.append(ind)
 
-        # get tracked points
+        # generate index for new points
         meat =list()
         iko = list()
         good_points = np.int32(new_keypoints)
 
-        for me,it in enumerate(good_points.flat):
+        for me,it in enumerate(good_points):
             meat.append(me)
             iko.append(it)
-        # new_features = zip(it,me)
+        new_features = zip(meat,iko)
 
-        diff = np.intersect1d(good_points,p0)
+        col = 0
+        colList = []
 
-        # calculate euclidean distance
-        dist = list()
-        for pos1 in diff.flat:
-            for pos2 in p0.flat:
-                track = sp.euclidean(pos1,pos2)
-                dist.append(track)
+        for i in xrange(len(new_indices)):
+            colList += [new_indices[i][col]]
 
-        # get differential image
-        d1 = cv2.absdiff(img1,img2)
-        d2 = cv2.absdiff(img2,img3)
-        bit = cv2.bitwise_and(d1,d2)
-        ret,thresh = cv2.threshold(bit,35,255,cv2.THRESH_BINARY)
+        return p0[0],new_keypoints[0]
 
-        moving = list()
-      
-        for cell in thresh.flat:
-            if cell == 255:
-                move = 'True'
-                moving.append(move)
-            pixie = len(moving)
+    # calculate euclidean distance between pixels
+    def distance(self,a,b):
 
-        return features
+        # euclidean distance between two points
+        dist = sp.euclidean(a,b)
+
+        return dist
+       
 
         
          
