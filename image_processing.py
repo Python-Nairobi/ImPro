@@ -9,68 +9,65 @@ Created 31, July 2014
 
 # load required libraries
 import urllib
+import shutil
 import os
 import time
 import cv2
 import links
+import sys
 import numpy as np 
-import scipy.spatial.distance as sp 
 from PIL import Image, ImageMath
 from os.path import isfile, join
 
 ''' --------------------------------- Access Cameras ------------------------------'''
 
 # create Route class
-class Route(object):
+class route(object):
 
-    # initialize 
+    # initialize class
     def __init__(self,name):
-        self.name = name
-        self.path = os.getcwd()+'/'+self.name
-        self.bb=None
+        global way 
+        way = links.cameras
+        if name in way:
+            self.name = name
+            self.path = os.getcwd()+'/'+self.name
+            self.bb=None
+        else:
+            sys.exit()
 
     # set working directory
     def set_dir(self):
         global path
-        #path = os.getcwd()+'/'+self.name
         if not os.path.exists(self.path):
             os.makedirs(self.path)
-        return os.chdir(self.path)
+            os.chdir(self.path)
 
+        
     # capture images
-    def images(self):
+    def capture_images(self):
         for i in 'abc':
-            way = links.links
             if self.name in way:
-                urllib.urlretrieve(way[self.name],'img_'+i+'.jpg')
-                time.sleep(6)
-            else:
-                print 'No Camera for Location'
+                    urllib.urlretrieve(way[self.name],'img_'+i+'.jpg')
+                    time.sleep(6)
 
-    # load downloaded images
+    # load images
     def load(self):
-        # set variables  
         files = os.listdir(self.path)
         a = dict()
         b = dict()
         k = 0
 
-        # load captured images
         while k <= len(files):
             for names in files:
                 if names != '.DS_Store':
-                    try:
-                        a[names] = Image.open(names).convert('L')
-                        a[names].load()
-                        b[names] = np.asarray(a[names])
-                    except IOError:
-                        camera_status = 'Camera Busy'
-                        print camera_status
-                    except KeyError:
-                        camera_status = 'Camera Busy'
-                        print camera_status
+                    a[names] = Image.open(names).convert('L')
+                    a[names].load()
+                    b[names] = np.asarray(a[names])     
+            k +=1
 
-                k +=1
+        # delete image folder
+        shutil.rmtree(os.getcwd())
+            
         return b
 
     # differential imaging
@@ -167,17 +164,7 @@ class Route(object):
         for i in xrange(len(new_indices)):
             colList += [new_indices[i][col]]
 
-        return p0[0],new_keypoints[0]
+        return p0,column_list,new_keypoints,colList
 
-    # calculate euclidean distance between pixels
-    def distance(self,a,b):
-
-        # euclidean distance between two points
-        dist = sp.euclidean(a,b)
-
-        return dist
+    
        
-
-        
-         
-      
