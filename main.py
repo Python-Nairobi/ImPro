@@ -5,57 +5,40 @@ Created 13 August, 2014
 '''
 
 # load required libraries
-from __future__ import division
 import image_processing
 import numpy as np
 from flask import Flask
+import links
 import json
-
+import scipy as sp
 
 # create flask web server 
-app = Flask(__name__)
+#app = Flask(__name__)
 
-# capture HTTP endpoint
-@app.route('/ImPro/<road>')
+# create HTTP endpoint
+#@app.route('/ImPro/<road>')
 
-def get_route(road):
-	# create Directory
-	#road = 'wilson'
+# main function
+# def get_route(road):
+# initialize route class
+road = 'sarit'
+traffic = image_processing.route(road)
 
-	route = image_processing.Route(road)
-	route.set_dir()
+# setup working directory
+traffic.set_dir()
 
-	# grab Image  
-	route.images()
+# get image from traffic camera
+traffic.capture_images()
 
-	# load images
-	x =route.load()
+# load image stack
+x = traffic.load()
 
-	# get number of different pixels 
-	y = route.diffImg(x['img_a.jpg'],x['img_b.jpg'],x['img_c.jpg'])
-	print y
+# differential imaging
+y =  traffic.diffImg(x['img_a.jpg'],x['img_b.jpg'],x['img_c.jpg'])
 
-	# get distance moved by tracked pixles
-	z = route.opticalFlow(x['img_a.jpg'],x['img_b.jpg'],x['img_c.jpg'])
-	print z
+# calculate optical flow
+z = traffic.opticalFlow(x['img_a.jpg'],x['img_b.jpg'],x['img_c.jpg'])
+print (z)
 
-	# distance
-	d = route.distance(z[0][0],z[1][0])
-	print d
-
-	if d > 100: 
-		update = "traffic is clear on" + road
-	else: 
-		update = "traffic is standstill on" + road
-
-	updates=json.dumps(update)
-	return updates
-
-if __name__ == "__main__":
-    	app.run(host='http://impro.cloudapp.net')
-
-
-   
-
-
-
+#if __name__ == "__main__":
+#app.run()
