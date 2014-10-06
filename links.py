@@ -1,5 +1,3 @@
-
-
 '''
 Created on Augus, 13 2014
 @author: iHub Research
@@ -10,7 +8,7 @@ Created on Augus, 13 2014
 
 # dictionary of links
 
-links = dict (
+cameras = dict (
 museum='http://traffic.accesskenya.com/images/traffic/feeds/purshotam.jpg',
 ojijo='http://traffic.accesskenya.com/images/traffic/feeds/mhcojijo.jpg',
 forest_limuru='http://traffic.accesskenya.com/images/traffic/feeds/forestlimuru.jpg?',
