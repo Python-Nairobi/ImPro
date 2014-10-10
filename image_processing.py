@@ -18,6 +18,7 @@ import sys
 import numpy as np 
 from PIL import Image, ImageMath
 from os.path import isfile, join
+from scipy.spatial import distance
 
 ''' --------------------------------- Access Cameras ------------------------------'''
 
@@ -102,69 +103,23 @@ class route(object):
                                 minDistance = 3,
                                 blockSize = 3)
 
-
         # feature extraction of points to track 
         pt = cv2.goodFeaturesToTrack(img1,**features_param)
-
-        # convert corner points to floating-point
         p0 =np.float32(pt).reshape(-1,1,2)
 
-        # generate index for corner points
-        points = list()
-        vally = list()
-        for p,val in enumerate(p0):
-            points.append(p)
-            vally.append(val)
-        features = zip(points,vally)
-
-        column = 0
-        column_list = []
-
-        for j in xrange(len(vally)):
-            column_list += [vally[j][column]]
-
-        # get next points using lucas-kanade optical flow 
-        p1,st,err =cv2.calcOpticalFlowPyrLK(img1, img2,p0,
-                                            None,**lk_params)
+        # calaculate average movement
+        dist = list()
+        for loop in p0: 
+            p1,st,err =cv2.calcOpticalFlowPyrLK(img1, img2,loop,
+                                                None,**lk_params)
       
-        # forward-backward error detection
-        p0r,st,err =cv2.calcOpticalFlowPyrLK(img2,img1,p1,
+            p0r,st,err =cv2.calcOpticalFlowPyrLK(img2,img1,p1,
                                             None,**lk_params)
-       
-        # get correctly predicted points via absolute difference
-        d = abs(p0-p0r).reshape(-1, 2).max(-1)
-        good = d < 1
 
-        # cycle through all current and new keypoints and only keep
-        # those that satisfy the "good" condition above
-
-        # Initialize a list to hold new keypoints
-        new_keypoints = list()
-        new_indices = list()
-
-        for (x, y), good_flag,ind in zip(p1.reshape(-1, 2), good,enumerate(good)):
-            if not good_flag:
-                continue
-            new_keypoints.append((x,y))
-            new_indices.append(ind)
-
-        # generate index for new points
-        meat =list()
-        iko = list()
-        good_points = np.int32(new_keypoints)
-
-        for me,it in enumerate(good_points):
-            meat.append(me)
-            iko.append(it)
-        new_features = zip(meat,iko)
-
-        col = 0
-        colList = []
-
-        for i in xrange(len(new_indices)):
-            colList += [new_indices[i][col]]
-
-        return p0,column_list,new_keypoints,colList
-
+            if abs(loop-p0r).reshape(-1, 2).max(-1) < 1:
+                dst = distance.euclidean(loop,p0r)
+                dist.append(dst)
+        
+        return round(max(dist)*10,2)
     
        
