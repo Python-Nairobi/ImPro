@@ -3,7 +3,7 @@
 '''
 Created 31, July 2014
 
-@author: iHub Research
+@author: Chris Orwa
 
 '''
 
@@ -19,8 +19,6 @@ import numpy as np
 from PIL import Image, ImageMath
 from os.path import isfile, join
 from scipy.spatial import distance
-
-''' --------------------------------- Access Cameras ------------------------------'''
 
 # create Route class
 class route(object):
